@@ -5,10 +5,10 @@ install_requirements:
 	@pip install -r requirements.txt
 
 check_code:
-	@flake8 scripts/* TFM_scaleGCP/*.py
+	@flake8 scripts/* <package_name>/*.py
 
 black:
-	@black scripts/* TFM_scaleGCP/*.py
+	@black scripts/* <package_name>/*.py
 
 test:
 	@coverage run -m pytest tests/*.py
@@ -22,8 +22,8 @@ clean:
 	@rm -f .coverage
 	@rm -fr */__pycache__ */*.pyc __pycache__
 	@rm -fr build dist
-	@rm -fr TFM_scaleGCP-*.dist-info
-	@rm -fr TFM_scaleGCP.egg-info
+	@rm -fr <package_name>-*.dist-info
+	@rm -fr <package_name>.egg-info
 
 install:
 	@pip install . -U
@@ -70,7 +70,7 @@ RUNTIME_VERSION=2.8
 
 ##### Package params  - - - - - - - - - - - - - - - - - - -
 
-PACKAGE_NAME=TFM_scaleGCP
+PACKAGE_NAME=<package_name>
 FILENAME=trainer
 
 ##### Job - - - - - - - - - - - - - - - - - - - - - - - - -

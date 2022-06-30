@@ -1,74 +1,34 @@
-# Data analysis
-- Document here the project: util_funcs
-- Description: Project Description
-- Data Source:
-- Type of analysis:
+# **About Util_funcs**
+# **Useful repo for collected all-sorts-of-things**
+I've put this together so in case I don't have access to my machine,
+I can quickly get hold of a huge range of massive resources.
 
-Please document the project the better you can.
+No doubt there are considerably better versions out there, but this
+is my one that I know well. Hence the coded filenames etc!
 
-# Startup the project
+## **Useful sections**
+### **cheatsheets**
+ - see util_funcs/cheatsheets
+A collection of useful ML, python and related cheatsheets
+### **makefiles**
+ - see util_funcs/makefiles - and the actual Makefile, of course
+Collection of various makefiles
+Lots of useful commands, though of course, set up required
+### **test material, including bdd behaviour driven development**
+these provides setup and examples for BDD, very handy
+examples show simple classes and examples with and without parameter input
 
-The initial setup.
+ - see
+   - util_funcs/bdd_start (for the classes to be tested)
+   - util_funcs/tests/features (for the BDD feature definitions)
+   - util_funcs/tests/step_defs (for the test code to match features)
 
-Create virtualenv and install the project:
-```bash
-sudo apt-get install virtualenv python-pip python-dev
-deactivate; virtualenv ~/venv ; source ~/venv/bin/activate ;\
-    pip install pip -U; pip install -r requirements.txt
-```
+- see also REF: https://pytest-bdd.readthedocs.io/en/latest/index.html?highlight=run#organizing-your-scenarios
 
-Unittest test:
-```bash
-make clean install test
-```
 
-Check for util_funcs in gitlab.com/{group}.
-If your project is not set please add it:
-
-- Create a new project on `gitlab.com/{group}/util_funcs`
-- Then populate it:
-
-```bash
-##   e.g. if group is "{group}" and project_name is "util_funcs"
-git remote add origin git@github.com:{group}/util_funcs.git
-git push -u origin master
-git push -u origin --tags
-```
-
-Functionnal test with a script:
-
-```bash
-cd
-mkdir tmp
-cd tmp
-util_funcs-run
-```
-
-# Install
-
-Go to `https://github.com/{group}/util_funcs` to see the project, manage issues,
-setup you ssh public key, ...
-
-Create a python3 virtualenv and activate it:
-
-```bash
-sudo apt-get install virtualenv python-pip python-dev
-deactivate; virtualenv -ppython3 ~/venv ; source ~/venv/bin/activate
-```
-
-Clone the project and install it:
-
-```bash
-git clone git@github.com:{group}/util_funcs.git
-cd util_funcs
-pip install -r requirements.txt
-make clean install test                # install and test
-```
-Functionnal test with a script:
-
-```bash
-cd
-mkdir tmp
-cd tmp
-util_funcs-run
-```
+#### **run tests**
+run, in the root folder of the repo:
+  - make test
+    - this will run pytest only, and provide coverage report
+  - make test_bdd
+    - this will run pytest and pytest_bdd tests, and provide coverage report

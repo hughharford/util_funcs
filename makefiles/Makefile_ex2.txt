@@ -35,7 +35,7 @@
 
 ##### Package params  - - - - - - - - - - - - - - - - - - -
 
-####__# PACKAGE_NAME=SimpleTaxiFare
+####__# PACKAGE_NAME=<define_here>
 ####__# FILENAME=trainer
 
 ##### Job - - - - - - - - - - - - - - - - - - - - - - - - -

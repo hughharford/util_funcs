@@ -5,10 +5,10 @@ install_requirements:
 	@pip install -r requirements.txt
 
 check_code:
-	@flake8 scripts/* TaxiFareModel/*.py
+	@flake8 scripts/* <package_name>/*.py
 
 black:
-	@black scripts/* TaxiFareModel/*.py
+	@black scripts/* <package_name>/*.py
 
 test:
 	@coverage run -m pytest tests/*.py
@@ -22,8 +22,8 @@ clean:
 	@rm -f .coverage
 	@rm -fr */__pycache__ */*.pyc __pycache__
 	@rm -fr build dist
-	@rm -fr TaxiFareModel-*.dist-info
-	@rm -fr TaxiFareModel.egg-info
+	@rm -fr <package_name>-*.dist-info
+	@rm -fr <package_name>.egg-info
 
 install:
 	@pip install . -U
@@ -46,10 +46,10 @@ count_lines:
 # ----------------------------------
 
 # project id - replace with your GCP project id
-PROJECT_ID=le-wagon-bootcamp-347615
+PROJECT_ID=...
 
 # bucket name - replace with your GCP bucket name
-BUCKET_NAME=wagon-data-900-harford
+BUCKET_NAME=...
 
 # choose your region from https://cloud.google.com/storage/docs/locations#available_locations
 REGION=eu
@@ -62,7 +62,7 @@ create_bucket:
 
 # path to the file to upload to GCP (the path to the file should be absolute or should match the directory where the make command is ran)
 # replace with your local path to the `train_1k.csv` and make sure to put the path between quotes
-LOCAL_PATH="/home/hsth/code/hughharford/TaxiFareModel/raw_data/train_1k.csv"
+LOCAL_PATH="/home/hsth/code/hughharford/<package_name>/raw_data/train_1k.csv"
 
 # bucket directory in which to store the uploaded file (`data` is an arbitrary name that we choose to use)
 BUCKET_FOLDER=data
