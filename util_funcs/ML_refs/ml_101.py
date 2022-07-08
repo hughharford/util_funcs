@@ -34,6 +34,7 @@ from sklearn.preprocessing import RobustScaler
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import LabelEncoder
 
 # scikit modelling
 from sklearn.linear_model import LinearRegression # explicit class import from module
@@ -120,7 +121,7 @@ data = pd.read_csv('path_to_csv_file.csv')
 
 
 # ############################## ###############################
-#       Data Exploratory Data Analysis
+#       Exploratory Data Analysis and Data Cleaning
 # ############################## ###############################
 #
 #
@@ -143,6 +144,16 @@ data['feature'].value_counts().sort_values()
 
 data.Feature.unique() # to show uniques
 
+# ############################## ###############################
+#       Data Cleaning
+# ############################## ###############################
+#
+#
+#
+#
+#
+#
+#
 
 #       Duplicates
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -164,6 +175,9 @@ empty / len(data)
 #       Replacing values
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 data.FeatureName.replace(np.nan, "NoG", inplace=True) #Replace NaN with...
+data[['feature']] = data[['feature']].replace(
+    np.nan, data['feature'].median()) # replace with median
+
 
 # ############################## ###############################
 #       Data Visualisation
@@ -190,6 +204,7 @@ data.boxplot(); # good for seeing outliers
 # histograms
 data.hist('feature_a'); # pd histogram
 sns.histplot(data=data,x="feature",bins=30);
+sns.distplot(x=data['feature'], kde = False);
 
 # scatter plots
 sns.scatterplot(data=data, x='column_name_x', y='column_name_y');
@@ -210,8 +225,21 @@ fig.update_layout(title='Loss Function', autosize=False,
                   width=1000, height=800)
 fig.show()
 
+# correlation heatmap
+corr = data.corr()
+sns.heatmap(corr,
+        xticklabels=corr.columns,
+        yticklabels=corr.columns,
+        cmap= "YlGnBu");
+# show the correlation between column pairs in a dataframe.
+corr_df = corr.unstack().reset_index()
+corr_df.columns = ['feature_1','feature_2', 'correlation'] # rename columns
+corr_df.sort_values(by="correlation",ascending=False, inplace=True)
+corr_df = corr_df[corr_df['feature_1'] != corr_df['feature_2']]
+corr_df
+
 # ############################### ###############################
-#       Data selection
+#       Feature selection
 # ############################### ###############################
 #
 #
@@ -229,6 +257,38 @@ data = data.select_dtypes(include=np.number).dropna()
 
 # select by column name
 data = data[['column_one','column_two']]
+
+y = data['column_name']
+X = data.drop(columns = 'column_name')
+
+# correlation heatmap
+corr = data.corr()
+sns.heatmap(corr,
+        xticklabels=corr.columns,
+        yticklabels=corr.columns,
+        cmap= "YlGnBu");
+# show the correlation between column pairs in a dataframe.
+corr_df = corr.unstack().reset_index()
+corr_df.columns = ['feature_1','feature_2', 'correlation'] # rename columns
+corr_df.sort_values(by="correlation",ascending=False, inplace=True)
+corr_df = corr_df[corr_df['feature_1'] != corr_df['feature_2']]
+corr_df
+
+# Feature Permutation
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# To rank features by order of importance.
+
+X_ = X[:500]
+y_ = y[:500]
+lin_model = LinearRegression().fit(X_, y_) # Fit model on sub_sample
+
+permutation_score = permutation_importance(lin_model, X_, y_, n_repeats=10)
+importance_df = pd.DataFrame(np.vstack((X.columns,permutation_score.importances_mean)).T)
+importance_df.columns=['feature','score decrease']
+importance_df.sort_values(by="score decrease", ascending = False)
+
+# TECHNIQUE: Use permutation importance to identify features that can
+# be dropped
 
 # ############################### ###############################
 #       Test / Train split
@@ -284,7 +344,9 @@ data[['feature_a']].boxplot(); # plot after
 
 # RobustScaler              handles normal distributions with outliers
 
-# most simple scaling possible
+# Custom scaling            as per need
+
+# StandardScaler  most simple scaling possible
 std_scaler = StandardScaler()
 X_scaled_train = std_scaler.fit_transform(X_train)
 X_scaled_t = pd.DataFrame(X_scaled_train)
@@ -295,10 +357,21 @@ X_scaled = scaler.transform(X)
 X_scaled = pd.DataFrame(X_scaled, columns=X.columns)
 X.shape
 
+# RobustScaler
 r_scaler = RobustScaler() # Instanciate Robust Scaler
 r_scaler.fit(data[['feature']]) # Fit scaler to feature
 data['feature'] = r_scaler.transform(data[['feature']]) # apply scale
 
+# Manual custom scaling the data:
+X_unscaled = X
+X_scaled = X_unscaled.copy()
+
+for feature in X_scaled.columns:
+    mu = X_scaled[feature].mean()
+    sigma = X_scaled[feature].std()
+    X_scaled[feature] = X_scaled[feature].apply(lambda x: (x-mu)/sigma)
+
+X_scaled.head(3)
 
 
 # ############################### ###############################
@@ -311,6 +384,7 @@ data['feature'] = r_scaler.transform(data[['feature']]) # apply scale
 #
 #
 #
+# TODO: go over encoding quickly
 
 # Basic types
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -318,6 +392,7 @@ data['feature'] = r_scaler.transform(data[['feature']]) # apply scale
 #                           creates a binary column for each category
 # Ordinal Encoding          for
 #
+# Label Encoding            target only
 #
 # Cyclical engineering      when based on time or other cycles
 #       see link
@@ -331,9 +406,26 @@ feature_encoded = ohe.transform(data[['feature']])
 data['feat_cat1'],data['feat_cat2'],data['feat_cat3'] = feature_encoded.T
 data.drop(columns='feature', inplace=True)
 
-# Ordinal Encoding
-data['CentralAir'] = pd.Series(np.where(data['CentralAir']=='Y', 1, 0))
-data['CentralAir'].value_counts()
+# Ordinal Encoding (manual)
+data['feature'] = pd.Series(np.where(data['feature']=='Y', 1, 0))
+data['feature'] = np.where(data['feature'] == 'value', 1, 0)
+data['feature'].value_counts()
+
+# apply ordinal converter:
+def cn_converter(x):
+    if x == 'four': return 4
+    if x == 'six': return 6
+    if x == 'five': return 5
+    if x == 'eight': return 8
+    if x == 'two': return 2
+    if x == 'three': return 3
+    if x == 'twelve': return 12
+data['feature'] = data['feature'].apply(cn_converter)
+
+# LabelEncoder
+l_encoder = LabelEncoder()
+l_encoder.fit(data[['target']])
+data['target'] = l_encoder.transform(data[['target']])
 
 # Cyclical engineering (for monthly sales feature)
 sns.histplot(data['MoSold']);
