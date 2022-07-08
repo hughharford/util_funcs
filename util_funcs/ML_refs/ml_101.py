@@ -138,7 +138,11 @@ data.info()
 
 data.columns # see column names
 
-data[['column_name']].value_counts()
+data[['feature']].value_counts()
+data['feature'].value_counts().sort_values()
+
+data.Feature.unique() # to show uniques
+
 
 #       Duplicates
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -190,6 +194,8 @@ sns.histplot(data=data,x="feature",bins=30);
 # scatter plots
 sns.scatterplot(data=data, x='column_name_x', y='column_name_y');
 plt.scatter(data['column_a'], data['column_b'], color = 'red');
+# for showing cyclical values
+data.plot.scatter('sin_MoSold','cos_MoSold').set_aspect('equal');
 
 # very cool 3d, interactive plot
 import plotly.graph_objects as go
@@ -265,11 +271,18 @@ data[['feature_a']].boxplot(); # plot after
 
 # TODO: Cover scaler and when you use each one
 
+# NOTES:
+# Scaling is critical for many ML and DL use cases, especially those
+# that are distance based
+
 # Scaler                    Use
 # ==========================================================
 # StandardScaler
-# MixMaxScaler
-# RobustScaler
+
+# MixMaxScaler              for distributions that aren't normal
+#                           for ordinal (categorical with ordering) features
+
+# RobustScaler              handles normal distributions with outliers
 
 # most simple scaling possible
 std_scaler = StandardScaler()
@@ -286,8 +299,10 @@ r_scaler = RobustScaler() # Instanciate Robust Scaler
 r_scaler.fit(data[['feature']]) # Fit scaler to feature
 data['feature'] = r_scaler.transform(data[['feature']]) # apply scale
 
+
+
 # ############################### ###############################
-#           Regularisation
+#           Feature Engineering
 # ############################### ###############################
 #
 #
@@ -297,8 +312,38 @@ data['feature'] = r_scaler.transform(data[['feature']]) # apply scale
 #
 #
 
+# Basic types
+# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# One Hot Encoding          categorical features
+#                           creates a binary column for each category
+# Ordinal Encoding          for
+#
+#
+# Cyclical engineering      when based on time or other cycles
+#       see link
+#       https://ianlondon.github.io/blog/encoding-cyclical-features-24hour-time
 
+# One Hot Encoding
+ohe = OneHotEncoder(sparse = False)
+ohe.fit(data[['feature']])
+feature_encoded = ohe.transform(data[['feature']])
+# create new columns (tranpose), then drop original
+data['feat_cat1'],data['feat_cat2'],data['feat_cat3'] = feature_encoded.T
+data.drop(columns='feature', inplace=True)
 
+# Ordinal Encoding
+data['CentralAir'] = pd.Series(np.where(data['CentralAir']=='Y', 1, 0))
+data['CentralAir'].value_counts()
+
+# Cyclical engineering (for monthly sales feature)
+sns.histplot(data['MoSold']);
+# split out into cos and sin to represent the cycle
+data['sin_MoSold'] = np.sin(2*np.pi*data.MoSold/12)
+data['cos_MoSold'] = np.cos(2*np.pi*data.MoSold/12)
+# plot to ensure it worked:
+data.plot.scatter('sin_MoSold','cos_MoSold').set_aspect('equal');
+# then drop original feature
+data.drop(columns = 'MoSold', inplace = True)
 
 # ############################### ###############################
 #           Modelling - Linear Regression
@@ -329,6 +374,11 @@ for index, elem in enumerate(log_model.feature_names_in_):
 lister
 
 # TODO: Classification and logistic regression: Revise log-odds
+
+
+# ############################### ###############################
+#           Regularisation
+# ############################### ###############################
 
 # 2.  Logistic Regression with a L2 penalty
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
