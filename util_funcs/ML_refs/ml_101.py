@@ -58,7 +58,6 @@ from sklearn.model_selection import train_test_split
 from sklearn.inspection import permutation_importance
 
 from sklearn.model_selection import GridSearchCV
-from sklearn.model_selection import RandomSearchCV
 from sklearn.model_selection import RandomizedSearchCV
 from scipy import stats
 
@@ -76,18 +75,23 @@ from sklearn.base import TransformerMixin, BaseEstimator
 from sklearn.preprocessing import FunctionTransformer
 from sklearn.compose import ColumnTransformer
 from sklearn.compose import make_column_transformer
+from sklearn.compose import make_column_selector
+from sklearn.compose import make_pipeline
+from sklearn.pipeline import make_union
+from sklearn.pipeline import make_column_transformer
+
 from sklearn.metrics import make_scorer, mean_squared_log_error
 # import graphviz
 from sklearn.tree import export_graphviz
 from xgboost import XGBRegressor
 
 # get diagram with pipeline name
-from sklearn import set_config; set_config(display='diagram')
+from sklearn import set_config; # set_config(display='diagram')
 
 # import selected parts of tensorflow tf
 import tensorflow as tf
 # tensorflow yellow underlines don't stop it working...
-from tensorflow.keras import datasets
+from tensorflow.keras import dfsets
 from tensorflow.keras.backend import expand_dims
 from tensorflow.keras.utils import to_categorical
 
@@ -100,14 +104,14 @@ from tensorflow.keras import layers, models
 from tensorflow.keras.callbacks import EarlyStopping
 from tensorflow.keras.layers.experimental.preprocessing import Normalization
 
-from tensorflow.keras.preprocessing import image_dataset_from_directory
+from tensorflow.keras.preprocessing import image_dfset_from_directory
 
 # padding with tf / keras
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 from tensorflow.keras.layers import Masking
 
 # ############################## ###############################
-#       Loading data
+#       Loading df
 # ############################## ###############################
 #
 #
@@ -117,11 +121,11 @@ from tensorflow.keras.layers import Masking
 #
 #
 
-data = pd.read_csv('path_to_csv_file.csv')
+df = pd.read_csv('path_to_csv_file.csv')
 
 
 # ############################## ###############################
-#       Exploratory Data Analysis and Data Cleaning
+#       Exploratory df Analysis and df Cleaning
 # ############################## ###############################
 #
 #
@@ -131,21 +135,28 @@ data = pd.read_csv('path_to_csv_file.csv')
 #
 #
 
-data.shape
-data.head(15)
-data.tail()
-data.describe() # min, max, mean, count etc
-data.info()
+df.shape
+df.head(15)
+df.tail()
+df.describe() # min, max, mean, count etc
+df.info()
 
-data.columns # see column names
+df.columns # see column names
 
-data[['feature']].value_counts()
-data['feature'].value_counts().sort_values()
+df[['feature']].value_counts()
+df['feature'].value_counts().sort_values()
 
-data.Feature.unique() # to show uniques
+df.Feature.unique() # to show uniques
+
+
+# Query the df:
+#Using variable
+value=False
+df.query("feature == @value")
+df.query("`feature1` >= @value*2 and `feature2` <= @value*3")
 
 # ############################## ###############################
-#       Data Cleaning
+#       df Cleaning
 # ############################## ###############################
 #
 #
@@ -159,28 +170,28 @@ data.Feature.unique() # to show uniques
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 # count duplicates
-duplicate_count = data.duplicated().sum()
+duplicate_count = df.duplicated().sum()
 duplicate_count
 
 # drop all duplicates
-data = data.drop_duplicates()
+df = df.drop_duplicates()
 
 
-#       Missing data
+#       Missing df
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # list empty values as a percentage by feature
-empty = data.isnull().sum().sort_values(ascending=False);
-empty / len(data)
+empty = df.isnull().sum().sort_values(ascending=False);
+empty / len(df)
 
 #       Replacing values
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-data.FeatureName.replace(np.nan, "NoG", inplace=True) #Replace NaN with...
-data[['feature']] = data[['feature']].replace(
-    np.nan, data['feature'].median()) # replace with median
+df.FeatureName.replace(np.nan, "NoG", inplace=True) #Replace NaN with...
+df[['feature']] = df[['feature']].replace(
+    np.nan, df['feature'].median()) # replace with median
 
 
 # ############################## ###############################
-#       Data Visualisation
+#       df Visualisation
 # ############################## ###############################
 #
 #
@@ -191,7 +202,7 @@ data[['feature']] = data[['feature']].replace(
 #
 
 # simple plots
-plt.plot(some_data_or_df = data);
+plt.plot(some_df = df);
 
 # chart features
 plt.xlabel('a')
@@ -199,39 +210,39 @@ plt.ylabel('b')
 
 
 # boxplot
-data.boxplot(); # good for seeing outliers
+df.boxplot(); # good for seeing outliers
 
 # histograms
-data.hist('feature_a'); # pd histogram
-sns.histplot(data=data,x="feature",bins=30);
-sns.distplot(x=data['feature'], kde = False);
+df.hist('feature_a'); # pd histogram
+sns.histplot(df=df,x="feature",bins=30);
+sns.distplot(x=df['feature'], kde = False);
 
 # scatter plots
-sns.scatterplot(data=data, x='column_name_x', y='column_name_y');
-plt.scatter(data['column_a'], data['column_b'], color = 'red');
+sns.scatterplot(df=df, x='column_name_x', y='column_name_y');
+plt.scatter(df['column_a'], df['column_b'], color = 'red');
 # for showing cyclical values
-data.plot.scatter('sin_MoSold','cos_MoSold').set_aspect('equal');
+df.plot.scatter('sin_MoSold','cos_MoSold').set_aspect('equal');
 
 # very cool 3d, interactive plot
 import plotly.graph_objects as go
 # for use in a Jupyter notebook...?
 Z, range_a, range_b = 50,50,50
 surface = go.Surface(x=range_a, y=range_b, z=Z)
-scatter = go.Scatter3d(x=data['column_a'], y=data['column_b'],
-                       z=data['loss_history'], mode='markers')
-fig = go.Figure(data=[surface, scatter])
+scatter = go.Scatter3d(x=df['column_a'], y=df['column_b'],
+                       z=df['loss_history'], mode='markers')
+fig = go.Figure(df=[surface, scatter])
 
 fig.update_layout(title='Loss Function', autosize=False,
                   width=1000, height=800)
 fig.show()
 
 # correlation heatmap
-corr = data.corr()
+corr = df.corr()
 sns.heatmap(corr,
         xticklabels=corr.columns,
         yticklabels=corr.columns,
         cmap= "YlGnBu");
-# show the correlation between column pairs in a dataframe.
+# show the correlation between column pairs in a dfframe.
 corr_df = corr.unstack().reset_index()
 corr_df.columns = ['feature_1','feature_2', 'correlation'] # rename columns
 corr_df.sort_values(by="correlation",ascending=False, inplace=True)
@@ -250,24 +261,27 @@ corr_df
 #
 
 # drop columns
-data = data.drop(columns = 'feature')
+df = df.drop(columns = 'feature')
 
 # Only keep numerical columns and raws without NaN
-data = data.select_dtypes(include=np.number).dropna()
+df = df.select_dtypes(include=np.number).dropna()
+
+X_num = X.select_dtypes(include=np.number)
+X_cat = X.select_dtypes(exclude=np.number)
 
 # select by column name
-data = data[['column_one','column_two']]
+df = df[['column_one','column_two']]
 
-y = data['column_name']
-X = data.drop(columns = 'column_name')
+y = df['column_name']
+X = df.drop(columns = 'column_name')
 
 # correlation heatmap
-corr = data.corr()
+corr = df.corr()
 sns.heatmap(corr,
         xticklabels=corr.columns,
         yticklabels=corr.columns,
         cmap= "YlGnBu");
-# show the correlation between column pairs in a dataframe.
+# show the correlation between column pairs in a dfframe.
 corr_df = corr.unstack().reset_index()
 corr_df.columns = ['feature_1','feature_2', 'correlation'] # rename columns
 corr_df.sort_values(by="correlation",ascending=False, inplace=True)
@@ -283,12 +297,13 @@ y_ = y[:500]
 lin_model = LinearRegression().fit(X_, y_) # Fit model on sub_sample
 
 permutation_score = permutation_importance(lin_model, X_, y_, n_repeats=10)
-importance_df = pd.DataFrame(np.vstack((X.columns,permutation_score.importances_mean)).T)
+importance_df = pd.dfFrame(np.vstack((X.columns,permutation_score.importances_mean)).T)
 importance_df.columns=['feature','score decrease']
 importance_df.sort_values(by="score decrease", ascending = False)
 
 # TECHNIQUE: Use permutation importance to identify features that can
 # be dropped
+
 
 # ############################### ###############################
 #       Test / Train split
@@ -301,21 +316,109 @@ importance_df.sort_values(by="score decrease", ascending = False)
 #
 #
 
-y = data['column_name']
-X = data.drop(columns = 'column_name')
+y = df['column_name']
+X = df.drop(columns = 'column_name')
 
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=0)
 X_train.shape
 
 # ############################### ###############################
+#       Pipelines
+# ############################### ###############################
+#
+#
+#
+#
+#
+#
+#
+
+# simple pipeline with model:
+pipe = Pipeline([
+    ('KNNImputer', KNNImputer())
+    ,('MixMaxScaler', MinMaxScaler())
+    ,('LogisticRegression', LogisticRegression())
+])
+# then fit and score (runs last section's methods, ie. the model):
+pipe.fit(X_train, y_train)
+pipe.score(X, y)
+
+pipe # in JN, will show the pipe
+
+
+# Impute then scale numerical values:
+num_transformer = Pipeline([
+    ('imputer', SimpleImputer()),
+    ('scaler', StandardScaler())
+])
+
+# Encode categorical values
+cat_transformer = OneHotEncoder(handle_unknown='ignore')
+
+# Parallelize "num_transformer" and "cat_transfomer"
+preprocessor = ColumnTransformer([
+    ('num_tr', num_transformer, ['age', 'bmi']),
+    ('cat_tr', cat_transformer, ['smoker', 'region'])
+])
+
+# custom functions for pipelines must have .fit() and .transform():
+
+# TransformerMixin inheritance is used to create fit_transform() method from fit() and transform()
+from sklearn.base import TransformerMixin, BaseEstimator
+
+class CustomStandardizer(TransformerMixin, BaseEstimator):
+
+    def __init__(self):
+        # super.__init__(self)
+        pass
+
+    def fit(self, X, y=None):
+        self.x_mean = X.mean()
+        self.x_sigma = X.std(ddof=0)
+        # print(f'self.x_mean \n{self.x_mean}\n')
+        # print(f'self.x_sigma \n{self.x_sigma}\n')
+        return self
+
+    def transform(self, X, y=None):
+        return (X - self.x_mean) /  self.x_sigma
+
+
+num_col = make_column_selector(dtype_include=['float64'])
+
+cat_transformer = OneHotEncoder()
+cat_col = make_column_selector(dtype_include=['object','bool'])
+
+
+# these column transforms are equivalent:
+
+#1:
+# Parallelize "num_transformer" and "cat_transfomer"
+# preprocessor = ColumnTransformer([
+#     ('num_tr', num_transformer, X_num),
+#     ('cat_tr', cat_transformer, X_cat),
+#     remainder='passthrough'
+#     ])
+#2:
+preprocess_columns = make_column_transformer(
+    (num_transformer, num_col),
+    (cat_transformer, cat_col),
+    remainder='passthrough'
+)
+
+# finally, add a model:
+# Add estimator
+pipe = make_pipeline(preprocessor, Ridge())
+pipe
+
+# ############################### ###############################
 #           Imputing
 # ############################### ###############################
 
-data[['feature_a']].boxplot(); # plot before
+df[['feature_a']].boxplot(); # plot before
 imputer = SimpleImputer(strategy="mean")
-imputer.fit(data[['feature_a']])
-data['feature_a'] = imputer.transform(data[['feature_a']])
-data[['feature_a']].boxplot(); # plot after
+imputer.fit(df[['feature_a']])
+df['feature_a'] = imputer.transform(df[['feature_a']])
+df[['feature_a']].boxplot(); # plot after
 
 
 # ############################### ###############################
@@ -349,20 +452,20 @@ data[['feature_a']].boxplot(); # plot after
 # StandardScaler  most simple scaling possible
 std_scaler = StandardScaler()
 X_scaled_train = std_scaler.fit_transform(X_train)
-X_scaled_t = pd.DataFrame(X_scaled_train)
+X_scaled_t = pd.dfFrame(X_scaled_train)
 
 # MinMaxScale our features for you
 scaler = MinMaxScaler().fit(X)
 X_scaled = scaler.transform(X)
-X_scaled = pd.DataFrame(X_scaled, columns=X.columns)
+X_scaled = pd.dfFrame(X_scaled, columns=X.columns)
 X.shape
 
 # RobustScaler
 r_scaler = RobustScaler() # Instanciate Robust Scaler
-r_scaler.fit(data[['feature']]) # Fit scaler to feature
-data['feature'] = r_scaler.transform(data[['feature']]) # apply scale
+r_scaler.fit(df[['feature']]) # Fit scaler to feature
+df['feature'] = r_scaler.transform(df[['feature']]) # apply scale
 
-# Manual custom scaling the data:
+# Manual custom scaling the df:
 X_unscaled = X
 X_scaled = X_unscaled.copy()
 
@@ -400,16 +503,16 @@ X_scaled.head(3)
 
 # One Hot Encoding
 ohe = OneHotEncoder(sparse = False)
-ohe.fit(data[['feature']])
-feature_encoded = ohe.transform(data[['feature']])
+ohe.fit(df[['feature']])
+feature_encoded = ohe.transform(df[['feature']])
 # create new columns (tranpose), then drop original
-data['feat_cat1'],data['feat_cat2'],data['feat_cat3'] = feature_encoded.T
-data.drop(columns='feature', inplace=True)
+df['feat_cat1'],df['feat_cat2'],df['feat_cat3'] = feature_encoded.T
+df.drop(columns='feature', inplace=True)
 
 # Ordinal Encoding (manual)
-data['feature'] = pd.Series(np.where(data['feature']=='Y', 1, 0))
-data['feature'] = np.where(data['feature'] == 'value', 1, 0)
-data['feature'].value_counts()
+df['feature'] = pd.Series(np.where(df['feature']=='Y', 1, 0))
+df['feature'] = np.where(df['feature'] == 'value', 1, 0)
+df['feature'].value_counts()
 
 # apply ordinal converter:
 def cn_converter(x):
@@ -420,22 +523,22 @@ def cn_converter(x):
     if x == 'two': return 2
     if x == 'three': return 3
     if x == 'twelve': return 12
-data['feature'] = data['feature'].apply(cn_converter)
+df['feature'] = df['feature'].apply(cn_converter)
 
 # LabelEncoder
 l_encoder = LabelEncoder()
-l_encoder.fit(data[['target']])
-data['target'] = l_encoder.transform(data[['target']])
+l_encoder.fit(df[['target']])
+df['target'] = l_encoder.transform(df[['target']])
 
 # Cyclical engineering (for monthly sales feature)
-sns.histplot(data['MoSold']);
+sns.histplot(df['MoSold']);
 # split out into cos and sin to represent the cycle
-data['sin_MoSold'] = np.sin(2*np.pi*data.MoSold/12)
-data['cos_MoSold'] = np.cos(2*np.pi*data.MoSold/12)
+df['sin_MoSold'] = np.sin(2*np.pi*df.MoSold/12)
+df['cos_MoSold'] = np.cos(2*np.pi*df.MoSold/12)
 # plot to ensure it worked:
-data.plot.scatter('sin_MoSold','cos_MoSold').set_aspect('equal');
+df.plot.scatter('sin_MoSold','cos_MoSold').set_aspect('equal');
 # then drop original feature
-data.drop(columns = 'MoSold', inplace = True)
+df.drop(columns = 'MoSold', inplace = True)
 
 # ############################### ###############################
 #           Modelling - Linear Regression
@@ -501,7 +604,7 @@ for index, elem in enumerate(strong_l2_log_model.feature_names_in_):
 l2_lister
 
 # sort and view results
-df_scores = pd.DataFrame(data=strong_l2_log_model.coef_[0],
+df_scores = pd.dfFrame(df=strong_l2_log_model.coef_[0],
                          index=strong_l2_log_model.feature_names_in_)
 abs(df_scores[0]).sort_values(ascending=True)
 
@@ -563,7 +666,7 @@ search = GridSearchCV(
                 n_jobs=-1
                 )
 
-# Fit data to Grid Search
+# Fit df to Grid Search
 search.fit(X_scaled_t, y_train)
 
 print(f'best_score_ {search.best_score_}')
@@ -594,7 +697,7 @@ search = RandomizedSearchCV(
                 n_jobs=-1
                 )
 
-# Fit data to Randomised Search
+# Fit df to Randomised Search
 search.fit(X_scaled_t, y_train)
 
 print(f'best_score_ {search.best_score_}')
